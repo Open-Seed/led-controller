@@ -61,7 +61,6 @@ void loop()
   }
 
   ledManager->tick();
-
   mqttService->tick();
   serverService->tick();
 }

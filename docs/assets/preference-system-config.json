@@ -1,0 +1,22 @@
+{
+  "board": {
+    "name": "openled",
+    "dns": "openled"
+  },
+  "wifi": {
+    "name": "openled",
+    "ssid": "ssid name",
+    "password": "ssid password"
+  },
+  "alarm": {
+    "code": "alarmCode"
+  },
+  "mqtt": {
+    "enabled": true,
+    "name": "openled",
+    "server": "server ip",
+    "port": "server  port",
+    "username": "mqtt username",
+    "password": "mqtt password"
+  }
+}

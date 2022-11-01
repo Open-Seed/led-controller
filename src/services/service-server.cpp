@@ -79,22 +79,42 @@ void api_post_preferences()
   shouldReboot = true;
 }
 
-void api_get_status()
+void api_get_state()
 {
+  String status = ledManager.getState();
+  server.send(200, "application/json", status);
+}
+
+void api_set_state()
+{
+
+  String _body = server.arg(0);
+  if (_body == NULL)
+  {                                                         // If the POST request doesn't have data
+    server.send(400, "text/plain", "400: Invalid Request"); // The request is invalid, so send HTTP status 400
+    return;
+  }
+
+  String _body = server.arg(0);
+
+  ledManager.processJson(_body);
+  ledManager.setState();
+
   String status = ledManager.getState();
   server.send(200, "application/json", status);
 }
 
 void api_not_found()
 {
-  server.send(404, "text/plain", "API Not Found");
+  server.send(404, "text/plain", "Not Found");
 }
 
 ServerService::ServerService()
 {
   Serial.println(" - Initializing Server Service");
   server.on("/", HTTP_GET, api_get_root);
-  server.on("/api/status", HTTP_GET, api_get_status);
+  server.on("/api/state", HTTP_GET, api_get_state);
+  server.on("/api/state", HTTP_POST, api_set_state);
   server.on("/api/system/preference", HTTP_GET, api_get_preferences);
   server.on("/api/system/preference", HTTP_POST, api_post_preferences);
   server.on("/api/system/info", HTTP_GET, api_get_system_info);

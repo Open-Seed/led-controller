@@ -43,9 +43,9 @@ enum StripType
 // In case of RGB(W): red, green, blue(, white) is used
 // All values need to be present, if they are not needed, set to -1,
 // it will be ignored.
-#define CONFIG_PIN_RED 0    // For RGB(W)
-#define CONFIG_PIN_GREEN 2  // For RGB(W)
-#define CONFIG_PIN_BLUE 3   // For RGB(W)
+#define CONFIG_PIN_RED 12   // For RGB(W)
+#define CONFIG_PIN_GREEN 13 // For RGB(W)
+#define CONFIG_PIN_BLUE 15  // For RGB(W)
 #define CONFIG_PIN_WHITE -1 // For BRIGHTNESS and RGBW
 
 // Miscellaneous

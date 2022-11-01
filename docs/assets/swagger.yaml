@@ -1,0 +1,280 @@
+swagger: "2.0"
+info:
+  description: "Open Led API Reference"
+  version: "1.0.0"
+  title: "Open Led"
+host: "openled.local"
+basePath: "/api"
+tags:
+  - name: "state"
+    description: "Led state management"
+  - name: "system"
+    description: "System interactions"
+schemes:
+  - "https"
+  - "http"
+paths:
+  /api/state:
+    get:
+      tags:
+        - "state"
+      summary: "Get Led State Information"
+      description: "List the current stations with their related statuses."
+      operationId: "getStations"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            type: "object"
+            properties:
+              stations:
+                type: "array"
+                items:
+                  $ref: "#/definitions/LedStateResponse"
+    post:
+      tags:
+        - "state"
+      summary: "Update Station Information"
+      description: "Update the state of the LED strip."
+      operationId: "postStations"
+      consumes:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Station update"
+          required: true
+          schema:
+            type: "object"
+            properties:
+              stations:
+                type: "array"
+                items:
+                  $ref: "#/definitions/LedState"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/LedStateResponse"
+  /system/info:
+    get:
+      tags:
+        - "system"
+      summary: "Get the system information"
+      description: "List the board and system info"
+      operationId: "systemInfo"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/System"
+  /system/reset:
+    post:
+      tags:
+        - "system"
+      summary: "Soft Reset the device"
+      description: ""
+      operationId: "reset"
+      produces:
+        - "text/csv"
+      responses:
+        "200":
+          description: "successful operation"
+  /system/preference:
+    get:
+      tags:
+        - "system"
+      summary: "Returns the current set of preferences"
+      description: ""
+      operationId: "getPreference"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Preference"
+    post:
+      tags:
+        - "system"
+      summary: "Updates the current set of preferences"
+      description: ""
+      operationId: "setPreference"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Preference"
+
+definitions:
+  LedState:
+    type: "object"
+    required:
+      - "state"
+    properties:
+      state:
+        type: "string"
+        enum:
+          - ON
+          - OFF
+      color:
+        $ref: "#/definitions/Color"
+      effect:
+        type: "string"
+        enum:
+          - colorfade_slow
+          - colorfade_fast
+      white_value:
+        type: "integer"
+        format: "int64"
+      brightness:
+        type: "integer"
+        format: "int64"
+      transition:
+        type: "integer"
+        format: "int64"
+        description: "Duration of transition between colors"
+
+  LedStateResponse:
+    type: "object"
+    required:
+      - "state"
+    properties:
+      state:
+        type: "string"
+        enum:
+          - ON
+          - OFF
+      color:
+        $ref: "#/definitions/Color"
+      effect:
+        type: "string"
+        enum:
+          - colorfade_slow
+          - colorfade_fast
+      white_value:
+        type: "integer"
+        format: "int64"
+      brightness:
+        type: "integer"
+        format: "int64"
+
+  System:
+    type: "object"
+    properties:
+      version:
+        type: "string"
+      uptime:
+        type: "integer"
+        format: "int64"
+      time:
+        type: "string"
+        format: "date-time"
+      weekday:
+        type: "integer"
+        format: "int64"
+      board:
+        $ref: "#/definitions/SystemInfoBoard"
+      sketch:
+        $ref: "#/definitions/SystemInfoSketch"
+
+  SystemInfoBoard:
+    type: "object"
+    properties:
+      ChipModel:
+        type: "string"
+      ChipCores:
+        type: "string"
+      CpuFreqMHz:
+        type: "string"
+      CycleCount:
+        type: "string"
+      HeapSize:
+        type: "string"
+      FreeHeap:
+        type: "string"
+      MaxAllocHeap:
+        type: "string"
+
+  SystemInfoSketch:
+    type: "object"
+    properties:
+      md5:
+        type: "string"
+      size:
+        type: "string"
+      freeSpace:
+        type: "string"
+
+  Preference:
+    type: "object"
+    properties:
+      board:
+        $ref: "#/definitions/PreferenceBoard"
+      wifi:
+        $ref: "#/definitions/PreferenceWifi"
+      mqtt:
+        $ref: "#/definitions/PreferenceMqtt"
+
+  PreferenceBoard:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      dns:
+        type: "string"
+
+  PreferenceWifi:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      ssid:
+        type: "string"
+      password:
+        type: "string"
+
+  Color:
+    type: "object"
+    properties:
+      r:
+        type: "string"
+      g:
+        type: "string"
+      b:
+        type: "string"
+
+  PreferenceMqtt:
+    type: "object"
+    properties:
+      enabled:
+        type: "boolean"
+      name:
+        type: "string"
+      server:
+        type: "string"
+      port:
+        type: "integer"
+        format: "int64"
+      username:
+        type: "string"
+      password:
+        type: "string"
