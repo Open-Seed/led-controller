@@ -48,6 +48,9 @@ bool SystemWifi::init()
 
     Serial.print(" - ");
     Serial.println(WiFi.localIP());
+
+    // Allow stable connection
+    delay(1500);
     return WiFi.status() == WL_CONNECTED;
   }
 }
