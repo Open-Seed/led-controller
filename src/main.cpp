@@ -34,19 +34,22 @@ void setup()
   Serial.println(FIRMWARE_VERSION);
 
   pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, LOW);
   analogWriteRange(255);
+
+  systemPreference = new SystemPreference();
+  ledManager = new LedManager();
 
   if (systemWifi.init())
   {
-    ledManager = new LedManager();
     mqttService = new MQTTService();
     serverService = new ServerService();
     Serial.println(F("Open LED Controller Started"));
+    digitalWrite(LED_BUILTIN, LOW);
   }
   else
   {
     Serial.println(F("Open LED Controller failed to start"));
+    digitalWrite(LED_BUILTIN, HIGH);
   }
 }
 

@@ -12,7 +12,7 @@ extern SystemPreference systemPreference;
 extern LedManager ledManager;
 extern bool shouldReboot;
 
-ESP8266WebServer server(HTTP_REST_PORT);
+ESP8266WebServer server;
 
 void api_get_root()
 {
@@ -94,8 +94,6 @@ void api_set_state()
     server.send(400, "text/plain", "400: Invalid Request"); // The request is invalid, so send HTTP status 400
     return;
   }
-
-  String _body = server.arg(0);
 
   ledManager.processJson(_body);
   ledManager.setState();

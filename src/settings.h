@@ -26,7 +26,6 @@ enum StripType
 #define BOARD_NAME "openled"
 #define BOARD_DNS "openled"
 #define WIFI_SSID_NAME "Open LED Controller"
-#define HTTP_REST_PORT 8080 // Port 80 clashes with MQTT client
 #define WIFI_RETRY_DELAY 500
 #define MAX_WIFI_INIT_RETRY 50
 
