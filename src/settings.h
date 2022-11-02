@@ -14,8 +14,8 @@ enum StripType
 #define CONFIG_STRIP RGB // Choose one of the options from above.
 
 // MQTT Topics
-#define CONFIG_MQTT_TOPIC_STATE "open_led/ESP_LED"
-#define CONFIG_MQTT_TOPIC_SET "open_led/ESP_LED/set"
+#define CONFIG_MQTT_TOPIC_STATE "open_led/state"
+#define CONFIG_MQTT_TOPIC_SET "open_led/state/set"
 
 #define CONFIG_MQTT_PAYLOAD_ON "ON"
 #define CONFIG_MQTT_PAYLOAD_OFF "OFF"
