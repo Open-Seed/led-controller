@@ -21,12 +21,10 @@ void messageReceived(char *topic, byte *payload, unsigned int length)
     Serial.print(topic);
     Serial.print("] ");
 
-    if (topic == CONFIG_MQTT_TOPIC_SET)
+    if (strcmp(topic, CONFIG_MQTT_TOPIC_SET) == 0)
     {
         String payloadString = String((char *)payload);
-
-        ledManager.processJson(payloadString);
-        ledManager.setState();
+        ledManager.setState(payloadString);
     }
 
     String state = ledManager.getState();

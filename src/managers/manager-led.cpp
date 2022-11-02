@@ -4,6 +4,9 @@
 #include "settings.h"
 #include "util/util-step.h"
 
+const bool rgb = (CONFIG_STRIP == RGB) || (CONFIG_STRIP == RGBW);
+const bool includeWhite = (CONFIG_STRIP == BRIGHTNESS) || (CONFIG_STRIP == RGBW);
+
 // Maintained state for reporting to HA
 byte red = 255;
 byte green = 255;
@@ -16,9 +19,6 @@ byte realRed = 0;
 byte realGreen = 0;
 byte realBlue = 0;
 byte realWhite = 0;
-
-const bool rgb = (CONFIG_STRIP == RGB) || (CONFIG_STRIP == RGBW);
-const bool includeWhite = (CONFIG_STRIP == BRIGHTNESS) || (CONFIG_STRIP == RGBW);
 
 bool stateOn = false;
 
@@ -42,8 +42,8 @@ byte flashBlue = blue;
 byte flashWhite = white;
 byte flashBrightness = brightness;
 
-// Globals for colorfade
-bool colorfade = false;
+// Globals for colorFade
+bool colorFade = false;
 int currentColor = 0;
 
 // {red, grn, blu, wht}
@@ -73,12 +73,18 @@ LedManager::LedManager()
     }
 }
 
-void LedManager::processJson(String &payload)
+void LedManager::setState(String &payload)
 {
-    StaticJsonDocument<256> doc;
-    serializeJson(doc, payload);
+    DynamicJsonDocument doc(256);
+    DeserializationError error = deserializeJson(doc, payload);
+    if (error)
+    {
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.c_str());
+        return;
+    }
 
-    if (doc.containsKey("state"))
+    if (doc["state"] != nullptr)
     {
         if (strcmp(doc["state"], CONFIG_MQTT_PAYLOAD_ON) == 0)
         {
@@ -91,11 +97,9 @@ void LedManager::processJson(String &payload)
     }
 
     // If "flash" is included, treat RGB and brightness differently
-    if (doc.containsKey("flash") ||
-        (doc.containsKey("effect") && strcmp(doc["effect"], "flash") == 0))
+    if (doc["flash"] != nullptr || (doc["effect"] != nullptr && strcmp(doc["effect"], "flash") == 0))
     {
-
-        if (doc.containsKey("flash"))
+        if (doc["flash"] != nullptr)
         {
             flashLength = (int)doc["flash"] * 1000;
         }
@@ -104,7 +108,7 @@ void LedManager::processJson(String &payload)
             flashLength = CONFIG_DEFAULT_FLASH_LENGTH * 1000;
         }
 
-        if (doc.containsKey("brightness"))
+        if (doc["brightness"] != nullptr)
         {
             flashBrightness = doc["brightness"];
         }
@@ -113,7 +117,7 @@ void LedManager::processJson(String &payload)
             flashBrightness = brightness;
         }
 
-        if (rgb && doc.containsKey("color"))
+        if (rgb && doc["color"] != nullptr)
         {
             flashRed = doc["color"]["r"];
             flashGreen = doc["color"]["g"];
@@ -126,7 +130,7 @@ void LedManager::processJson(String &payload)
             flashBlue = blue;
         }
 
-        if (includeWhite && doc.containsKey("white_value"))
+        if (includeWhite && doc["white_value"] != nullptr)
         {
             flashWhite = doc["white_value"];
         }
@@ -143,50 +147,50 @@ void LedManager::processJson(String &payload)
         flash = true;
         startFlash = true;
     }
-    else if (rgb && doc.containsKey("effect") &&
-             (strcmp(doc["effect"], "colorfade_slow") == 0 || strcmp(doc["effect"], "colorfade_fast") == 0))
+    else if (rgb && doc["effect"] != nullptr && (strcmp(doc["effect"], "color_fade_slow") == 0 || strcmp(doc["effect"], "color_fade_fast") == 0))
     {
         flash = false;
-        colorfade = true;
+        colorFade = true;
         currentColor = 0;
-        if (strcmp(doc["effect"], "colorfade_slow") == 0)
+        if (strcmp(doc["effect"], "color_fade_slow") == 0)
         {
-            transitionTime = CONFIG_COLORFADE_TIME_SLOW;
+            transitionTime = CONFIG_COLOR_FADE_TIME_SLOW;
         }
         else
         {
             transitionTime = CONFIG_COLORFADE_TIME_FAST;
         }
     }
-    else if (colorfade && !doc.containsKey("color") && doc.containsKey("brightness"))
+    else if (colorFade && doc["color"] == nullptr && doc["brightness"] != nullptr)
     {
-        // Adjust brightness during colorfade
+        // Adjust brightness during colorFade
         // (will be applied when fading to the next color)
         brightness = doc["brightness"];
     }
     else
-    { // No effect
+    {
+        // No effect
         flash = false;
-        colorfade = false;
+        colorFade = false;
 
-        if (rgb && doc.containsKey("color"))
+        if (rgb && doc["color"] != nullptr)
         {
             red = doc["color"]["r"];
             green = doc["color"]["g"];
             blue = doc["color"]["b"];
         }
 
-        if (includeWhite && doc.containsKey("white_value"))
+        if (includeWhite && doc["white_value"] != nullptr)
         {
             white = doc["white_value"];
         }
 
-        if (doc.containsKey("brightness"))
+        if (doc["brightness"] != nullptr)
         {
             brightness = doc["brightness"];
         }
 
-        if (doc.containsKey("transition"))
+        if (doc["transition"] != nullptr)
         {
             transitionTime = doc["transition"];
         }
@@ -195,48 +199,7 @@ void LedManager::processJson(String &payload)
             transitionTime = CONFIG_DEFAULT_TRANSITION_TIME;
         }
     }
-}
 
-void setColor(int inR, int inG, int inB, int inW)
-{
-    if (rgb)
-    {
-        analogWrite(CONFIG_PIN_RED, inR);
-        analogWrite(CONFIG_PIN_GREEN, inG);
-        analogWrite(CONFIG_PIN_BLUE, inB);
-    }
-
-    if (includeWhite)
-    {
-        analogWrite(CONFIG_PIN_WHITE, inW);
-    }
-
-    Serial.print("Setting LEDs: {");
-    if (rgb)
-    {
-        Serial.print("r: ");
-        Serial.print(inR);
-        Serial.print(" , g: ");
-        Serial.print(inG);
-        Serial.print(" , b: ");
-        Serial.print(inB);
-    }
-
-    if (includeWhite)
-    {
-        if (rgb)
-        {
-            Serial.print(", ");
-        }
-        Serial.print("w: ");
-        Serial.print(inW);
-    }
-
-    Serial.println("}");
-}
-
-void LedManager::setState()
-{
     if (stateOn)
     {
         // Update lights
@@ -276,15 +239,15 @@ String LedManager::getState()
         doc["white_value"] = white;
     }
 
-    if (rgb && colorfade)
+    if (rgb && colorFade)
     {
-        if (transitionTime == CONFIG_COLORFADE_TIME_SLOW)
+        if (transitionTime == CONFIG_COLOR_FADE_TIME_SLOW)
         {
-            doc["effect"] = "colorfade_slow";
+            doc["effect"] = "color_fade_slow";
         }
         else
         {
-            doc["effect"] = "colorfade_fast";
+            doc["effect"] = "color_fade_fast";
         }
     }
     else
@@ -296,6 +259,21 @@ String LedManager::getState()
     serializeJson(doc, json);
 
     return json;
+}
+
+void LedManager::setColor(int inR, int inG, int inB, int inW)
+{
+    if (rgb)
+    {
+        analogWrite(CONFIG_PIN_RED, inR);
+        analogWrite(CONFIG_PIN_GREEN, inG);
+        analogWrite(CONFIG_PIN_BLUE, inB);
+    }
+
+    if (includeWhite)
+    {
+        analogWrite(CONFIG_PIN_WHITE, inW);
+    }
 }
 
 void LedManager::tick()
@@ -313,20 +291,20 @@ void LedManager::tick()
         {
             if ((millis() - flashStartTime) % 1000 <= 500)
             {
-                setColor(flashRed, flashGreen, flashBlue, flashWhite);
+                this->setColor(flashRed, flashGreen, flashBlue, flashWhite);
             }
             else
             {
-                setColor(0, 0, 0, 0);
+                this->setColor(0, 0, 0, 0);
             }
         }
         else
         {
             flash = false;
-            setColor(realRed, realGreen, realBlue, realWhite);
+            this->setColor(realRed, realGreen, realBlue, realWhite);
         }
     }
-    else if (rgb && colorfade && !inFade)
+    else if (rgb && colorFade && !inFade)
     {
         realRed = map(colors[currentColor][0], 0, 255, 0, brightness);
         realGreen = map(colors[currentColor][1], 0, 255, 0, brightness);
@@ -341,7 +319,7 @@ void LedManager::tick()
         // If we don't want to fade, skip it.
         if (transitionTime == 0)
         {
-            setColor(realRed, realGreen, realBlue, realWhite);
+            this->setColor(realRed, realGreen, realBlue, realWhite);
 
             redVal = realRed;
             grnVal = realGreen;
@@ -377,7 +355,7 @@ void LedManager::tick()
                 bluVal = UtilStep::calculateVal(stepB, bluVal, loopCount);
                 whtVal = UtilStep::calculateVal(stepW, whtVal, loopCount);
 
-                setColor(redVal, grnVal, bluVal, whtVal); // Write current values to LED pins
+                this->setColor(redVal, grnVal, bluVal, whtVal); // Write current values to LED pins
                 loopCount++;
             }
             else

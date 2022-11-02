@@ -43,13 +43,13 @@ void setup()
   {
     mqttService = new MQTTService();
     serverService = new ServerService();
-    Serial.println(F("Open LED Controller Started"));
     digitalWrite(LED_BUILTIN, LOW);
+    Serial.println(F("Open LED Controller Started"));
   }
   else
   {
-    Serial.println(F("Open LED Controller failed to start"));
     digitalWrite(LED_BUILTIN, HIGH);
+    Serial.println(F("Open LED Controller failed to start"));
   }
 }
 
@@ -61,9 +61,11 @@ void loop()
     Serial.println("Rebooting...");
     delay(100);
     ESP.restart();
+    return;
   }
 
   ledManager->tick();
-  mqttService->tick();
+
   serverService->tick();
+  // mqttService->tick();
 }

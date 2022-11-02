@@ -42,8 +42,8 @@ enum StripType
 // In case of RGB(W): red, green, blue(, white) is used
 // All values need to be present, if they are not needed, set to -1,
 // it will be ignored.
-#define CONFIG_PIN_RED 12   // For RGB(W)
-#define CONFIG_PIN_GREEN 13 // For RGB(W)
+#define CONFIG_PIN_RED 13   // For RGB(W)
+#define CONFIG_PIN_GREEN 12 // For RGB(W)
 #define CONFIG_PIN_BLUE 15  // For RGB(W)
 #define CONFIG_PIN_WHITE -1 // For BRIGHTNESS and RGBW
 
@@ -52,5 +52,5 @@ enum StripType
 // Default number of flashes if no value was given
 #define CONFIG_DEFAULT_FLASH_LENGTH 2
 // Number of seconds for one transition in colorfade mode
-#define CONFIG_COLORFADE_TIME_SLOW 10
+#define CONFIG_COLOR_FADE_TIME_SLOW 10
 #define CONFIG_COLORFADE_TIME_FAST 3

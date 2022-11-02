@@ -8,12 +8,12 @@ class LedManager
 
 public:
     LedManager();
-    void processJson(String &payload);
-    void setState();
+    void setState(String &payload);
     String getState();
     void tick();
 
 private:
+    void setColor(int inR, int inG, int inB, int inW);
 };
 
 #endif

@@ -83,6 +83,7 @@ void api_get_state()
 {
   String status = ledManager.getState();
   server.send(200, "application/json", status);
+  delay(250);
 }
 
 void api_set_state()
@@ -95,11 +96,9 @@ void api_set_state()
     return;
   }
 
-  ledManager.processJson(_body);
-  ledManager.setState();
-
-  String status = ledManager.getState();
-  server.send(200, "application/json", status);
+  ledManager.setState(_body);
+  api_get_state();
+  delay(250);
 }
 
 void api_not_found()
