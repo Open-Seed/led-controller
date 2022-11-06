@@ -3,5 +3,8 @@
         "MQTT",
         "SSID",
         "Wifi"
-    ]
+    ],
+    "files.associations": {
+        "*.ccp": "cpp"
+    }
 }

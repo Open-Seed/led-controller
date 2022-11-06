@@ -9,6 +9,7 @@
 #include "managers/manager-led.h"
 
 // ---- Services ----
+#include "services/service-home-assistant.h"
 #include "services/service-mqtt.h"
 #include "services/service-server.h"
 
@@ -18,8 +19,9 @@
 
 WiFiClient espClient;
 SystemWifi systemWifi;
-ServerService *serverService;
 SystemPreference *systemPreference;
+ServerService *serverService;
+HomeAssistantService *homeAssistantService;
 MQTTService *mqttService;
 LedManager *ledManager;
 
@@ -41,7 +43,17 @@ void setup()
 
   if (systemWifi.init())
   {
-    mqttService = new MQTTService();
+
+    // Both use mqtt protocol, so can only enable one at a stage
+    if (ENABLED_HOME_ASSISTANT)
+    {
+      homeAssistantService = new HomeAssistantService();
+    }
+    else if (ENABLED_MQTT)
+    {
+      mqttService = new MQTTService();
+    }
+
     serverService = new ServerService();
     digitalWrite(LED_BUILTIN, LOW);
     Serial.println(F("Open LED Controller Started"));
@@ -64,7 +76,15 @@ void loop()
     return;
   }
 
+  if (ENABLED_HOME_ASSISTANT)
+  {
+    homeAssistantService->loop();
+  }
+  else if (ENABLED_MQTT)
+  {
+    mqttService->loop();
+  }
+
   ledManager->loop();
   serverService->loop();
-  mqttService->loop();
 }

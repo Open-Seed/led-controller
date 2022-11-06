@@ -7,10 +7,6 @@ class MQTTService
 public:
     MQTTService();
     void loop();
-
-private:
-    bool enabled;
-    void reportStatusChanges();
 };
 
 #endif

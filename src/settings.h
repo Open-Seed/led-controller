@@ -13,7 +13,12 @@ enum StripType
 
 #define CONFIG_STRIP RGB // Choose one of the options from above.
 
+// Home Assistant
+#define ENABLED_HOME_ASSISTANT true
+#define HA_UNIQUE_NAME "openled-1234" // Unique name used by home assistant as the device name
+
 // MQTT Topics
+#define ENABLED_MQTT false
 #define CONFIG_MQTT_TOPIC_STATE "open_led/state"
 #define CONFIG_MQTT_TOPIC_SET "open_led/state/set"
 #define CONFIG_MQTT_TOPIC_AVAILABILITY "open_led/availability"

@@ -10,7 +10,10 @@ You will be able to set the brightness and color of 5050, 3535 and other variant
 1. Open the `settings.h` file to update the settings as per your setup
 2. For the `CONFIG_STRIP` option, choose one of `BRIGHTNESS`, `RGB`, or `RGBW`.
 3. Update the `CONFIG_PIN_*` with the pins your are planning to use.
-4. Update the `MQTT Topics` if required, for instance running more than one device and you do not want them grouped.
+4. Integration configuration:
+
+   - For Home Assistant Device integration set `ENABLED_HOME_ASSISTANT` true
+   - For MQTT Entity integration set `ENABLED_MQTT` true and update the `MQTT Topics` if required,for instance running more than one device and you do not want them grouped.
 
 ### Loading the firmware
 
@@ -20,8 +23,11 @@ You will be able to set the brightness and color of 5050, 3535 and other variant
 
 ### Network
 
-1. Connect to the `Open LED Controller` network on your device
-2. Send the following json payload to the device on `http://192.168.68.104/api/system/preference
+1. Connect to the `Open LED Controller` network on your device, The device IP address should be 192.168.4.1
+2. Send the following json payload to the device on `http://192.168.4.1/api/system/preference mqtt config is shared between HA integration and mqtt integration
+
+- [board][dns] is a easy way to grab the board on the network by navigating to http://openled.local. Note, this name should be unique as well on your network.
+- [mqtt][name] is the unique identifier for the device on the ha/mqtt server
 
 ```json
 {
@@ -35,7 +41,6 @@ You will be able to set the brightness and color of 5050, 3535 and other variant
     "password": "ssid password"
   },
   "mqtt": {
-    "enabled": true,
     "name": "openled",
     "server": "server ip",
     "port": "server  port",
@@ -48,7 +53,11 @@ You will be able to set the brightness and color of 5050, 3535 and other variant
 3. The device should now restarted and start trying to connect to your network and mqtt server.
 4. Configure your mqtt server to communicate with the device.
 
-### Home Assistant
+### Home Assistant (Device)
+
+The integration will allow for auto discovery. The underlying library used to achieve this is [Arduino Home Assistant Integration](https://github.com/dawidchyrzynski/arduino-home-assistant) with implementation of the Light device.
+
+### Home Assistant (MQTT)
 
 To set this system up, you need to configure the [MQTT light component](https://www.home-assistant.io/integrations/light.mqtt#json-schema) in Home Assistant and set up a light to control. This guide assumes that you already have Home Assistant set up and running. If not, see the installation guides [here](https://home-assistant.io/getting-started/).
 

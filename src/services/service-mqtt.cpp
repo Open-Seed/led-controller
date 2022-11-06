@@ -84,25 +84,18 @@ void connectClient()
 
 MQTTService::MQTTService()
 {
-    DynamicJsonDocument config = systemPreference.getPreferences(PREFERENCE_SYSTEM_CONFIG);
 
-    this->enabled = config["mqtt"]["enabled"];
-    if (this->enabled)
-    {
-        mqttClient.setCallback(messageReceived);
-        connectClient();
-    }
+    mqttClient.setCallback(messageReceived);
+    connectClient();
 }
 
 void MQTTService::loop()
 {
-    if (this->enabled)
-    {
-        if (!mqttClient.connected())
-        {
-            connectClient();
-        }
 
-        mqttClient.loop();
+    if (!mqttClient.connected())
+    {
+        connectClient();
     }
+
+    mqttClient.loop();
 }

@@ -12,7 +12,6 @@
     "code": "alarmCode"
   },
   "mqtt": {
-    "enabled": true,
     "name": "openled",
     "server": "server ip",
     "port": "server  port",
