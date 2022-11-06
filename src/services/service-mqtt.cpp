@@ -13,6 +13,48 @@ extern WiFiClient espClient;
 
 PubSubClient mqttClient(espClient);
 
+void sendLedState()
+{
+    StaticJsonDocument<256> state = ledManager.getState();
+
+    String stateJson;
+    serializeJson(state, stateJson);
+    char payload[stateJson.length() + 1];
+    stateJson.toCharArray(payload, stateJson.length() + 1);
+    Serial.print("Payload : ");
+    Serial.println(payload);
+    mqttClient.publish(CONFIG_MQTT_TOPIC_STATE, payload, true);
+}
+
+// Handles messages received in the mqttSubscribeTopic
+void messageReceived(char *topic, byte *payload, unsigned int length)
+{
+    Serial.print("Message arrived [");
+    Serial.print(topic);
+    Serial.println("] ");
+
+    if (strcmp(topic, CONFIG_MQTT_TOPIC_SET) == 0)
+    {
+
+        StaticJsonDocument<256> doc;
+        DeserializationError error = deserializeJson(doc, payload);
+        if (error)
+        {
+            Serial.print(F("deserializeJson() failed: "));
+            Serial.println(error.c_str());
+            return;
+        }
+
+        String print;
+        serializeJson(doc, print);
+        Serial.println(print);
+
+        ledManager.setState(doc);
+    }
+
+    sendLedState();
+}
+
 void connectClient()
 {
     DynamicJsonDocument config = systemPreference.getPreferences(PREFERENCE_SYSTEM_CONFIG);
@@ -25,7 +67,7 @@ void connectClient()
     mqttClient.setServer(mqttServer, 1883);
 
     Serial.print(F(" - MQTT...."));
-    if (mqttClient.connect(mqttClientName, mqttUsername, mqttPassword))
+    if (mqttClient.connect(mqttClientName, mqttUsername, mqttPassword, CONFIG_MQTT_TOPIC_AVAILABILITY, 1, false, CONFIG_MQTT_PAYLOAD_ONLINE))
     {
         Serial.print(F("connected: "));
         Serial.println(mqttServer);
@@ -35,23 +77,9 @@ void connectClient()
         Serial.print(F("connection error: "));
         Serial.println(mqttServer);
     }
-}
 
-// Handles messages received in the mqttSubscribeTopic
-void messageReceived(char *topic, byte *payload, unsigned int length)
-{
-
-    Serial.print("Message arrived [");
-    Serial.print(topic);
-    Serial.print("] ");
-
-    if (strcmp(topic, CONFIG_MQTT_TOPIC_SET) == 0)
-    {
-        String payloadString = String((char *)payload);
-        ledManager.setState(payloadString);
-    }
-
-    String state = ledManager.getState();
+    mqttClient.subscribe(CONFIG_MQTT_TOPIC_SET);
+    sendLedState();
 }
 
 MQTTService::MQTTService()
@@ -62,14 +90,11 @@ MQTTService::MQTTService()
     if (this->enabled)
     {
         mqttClient.setCallback(messageReceived);
-        mqttClient.subscribe(CONFIG_MQTT_TOPIC_SET);
-        mqttClient.subscribe(CONFIG_MQTT_TOPIC_STATE);
-
         connectClient();
     }
 }
 
-void MQTTService::tick()
+void MQTTService::loop()
 {
     if (this->enabled)
     {

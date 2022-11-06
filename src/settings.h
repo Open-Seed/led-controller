@@ -16,9 +16,13 @@ enum StripType
 // MQTT Topics
 #define CONFIG_MQTT_TOPIC_STATE "open_led/state"
 #define CONFIG_MQTT_TOPIC_SET "open_led/state/set"
+#define CONFIG_MQTT_TOPIC_AVAILABILITY "open_led/availability"
 
 #define CONFIG_MQTT_PAYLOAD_ON "ON"
 #define CONFIG_MQTT_PAYLOAD_OFF "OFF"
+
+#define CONFIG_MQTT_PAYLOAD_ONLINE "online"
+#define CONFIG_MQTT_PAYLOAD_OFFLINE "offline"
 
 /**
  * WIFI Setup

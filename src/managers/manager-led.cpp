@@ -73,55 +73,47 @@ LedManager::LedManager()
     }
 }
 
-void LedManager::setState(String &payload)
+void LedManager::setState(StaticJsonDocument<256> payload)
 {
-    DynamicJsonDocument doc(256);
-    DeserializationError error = deserializeJson(doc, payload);
-    if (error)
-    {
-        Serial.print(F("deserializeJson() failed: "));
-        Serial.println(error.c_str());
-        return;
-    }
 
-    if (doc["state"] != nullptr)
+    if (payload["state"] != nullptr)
     {
-        if (strcmp(doc["state"], CONFIG_MQTT_PAYLOAD_ON) == 0)
+        if (strcmp(payload["state"], CONFIG_MQTT_PAYLOAD_ON) == 0)
         {
             stateOn = true;
         }
-        else if (strcmp(doc["state"], CONFIG_MQTT_PAYLOAD_OFF) == 0)
+        else if (strcmp(payload["state"], CONFIG_MQTT_PAYLOAD_OFF) == 0)
         {
             stateOn = false;
         }
     }
 
     // If "flash" is included, treat RGB and brightness differently
-    if (doc["flash"] != nullptr || (doc["effect"] != nullptr && strcmp(doc["effect"], "flash") == 0))
+    if (payload["flash"] != nullptr || (payload["effect"] != nullptr && strcmp(payload["effect"], "flash") == 0))
     {
-        if (doc["flash"] != nullptr)
+        if (payload["flash"] != nullptr)
         {
-            flashLength = (int)doc["flash"] * 1000;
+            flashLength = (int)payload["flash"] * 1000;
         }
         else
         {
             flashLength = CONFIG_DEFAULT_FLASH_LENGTH * 1000;
         }
 
-        if (doc["brightness"] != nullptr)
+        if (payload["brightness"] != nullptr)
         {
-            flashBrightness = doc["brightness"];
+            flashBrightness = payload["brightness"];
         }
         else
         {
             flashBrightness = brightness;
         }
 
-        if (rgb && doc["color"] != nullptr)
+        if (rgb && payload["color"] != nullptr)
         {
-            flashRed = doc["color"]["r"];
-            flashGreen = doc["color"]["g"];
-            flashBlue = doc["color"]["b"];
+            flashRed = payload["color"]["r"];
+            flashGreen = payload["color"]["g"];
+            flashBlue = payload["color"]["b"];
         }
         else
         {
@@ -130,9 +122,9 @@ void LedManager::setState(String &payload)
             flashBlue = blue;
         }
 
-        if (includeWhite && doc["white_value"] != nullptr)
+        if (includeWhite && payload["white_value"] != nullptr)
         {
-            flashWhite = doc["white_value"];
+            flashWhite = payload["white_value"];
         }
         else
         {
@@ -147,12 +139,12 @@ void LedManager::setState(String &payload)
         flash = true;
         startFlash = true;
     }
-    else if (rgb && doc["effect"] != nullptr && (strcmp(doc["effect"], "color_fade_slow") == 0 || strcmp(doc["effect"], "color_fade_fast") == 0))
+    else if (rgb && payload["effect"] != nullptr && (strcmp(payload["effect"], "color_fade_slow") == 0 || strcmp(payload["effect"], "color_fade_fast") == 0))
     {
         flash = false;
         colorFade = true;
         currentColor = 0;
-        if (strcmp(doc["effect"], "color_fade_slow") == 0)
+        if (strcmp(payload["effect"], "color_fade_slow") == 0)
         {
             transitionTime = CONFIG_COLOR_FADE_TIME_SLOW;
         }
@@ -161,11 +153,11 @@ void LedManager::setState(String &payload)
             transitionTime = CONFIG_COLORFADE_TIME_FAST;
         }
     }
-    else if (colorFade && doc["color"] == nullptr && doc["brightness"] != nullptr)
+    else if (colorFade && payload["color"] == nullptr && payload["brightness"] != nullptr)
     {
         // Adjust brightness during colorFade
         // (will be applied when fading to the next color)
-        brightness = doc["brightness"];
+        brightness = payload["brightness"];
     }
     else
     {
@@ -173,26 +165,26 @@ void LedManager::setState(String &payload)
         flash = false;
         colorFade = false;
 
-        if (rgb && doc["color"] != nullptr)
+        if (rgb && payload["color"] != nullptr)
         {
-            red = doc["color"]["r"];
-            green = doc["color"]["g"];
-            blue = doc["color"]["b"];
+            red = payload["color"]["r"];
+            green = payload["color"]["g"];
+            blue = payload["color"]["b"];
         }
 
-        if (includeWhite && doc["white_value"] != nullptr)
+        if (includeWhite && payload["white_value"] != nullptr)
         {
-            white = doc["white_value"];
+            white = payload["white_value"];
         }
 
-        if (doc["brightness"] != nullptr)
+        if (payload["brightness"] != nullptr)
         {
-            brightness = doc["brightness"];
+            brightness = payload["brightness"];
         }
 
-        if (doc["transition"] != nullptr)
+        if (payload["transition"] != nullptr)
         {
-            transitionTime = doc["transition"];
+            transitionTime = payload["transition"];
         }
         else
         {
@@ -220,7 +212,7 @@ void LedManager::setState(String &payload)
     inFade = false; // Kill the current fade
 }
 
-String LedManager::getState()
+StaticJsonDocument<256> LedManager::getState()
 {
     StaticJsonDocument<256> doc;
 
@@ -233,7 +225,7 @@ String LedManager::getState()
     }
 
     doc["brightness"] = brightness;
-
+    doc["color_mode"] = rgb ? "rgb" : "brightness";
     if (includeWhite)
     {
         doc["white_value"] = white;
@@ -255,10 +247,7 @@ String LedManager::getState()
         doc["effect"] = "null";
     }
 
-    String json;
-    serializeJson(doc, json);
-
-    return json;
+    return doc;
 }
 
 void LedManager::setColor(int inR, int inG, int inB, int inW)
@@ -276,7 +265,7 @@ void LedManager::setColor(int inR, int inG, int inB, int inW)
     }
 }
 
-void LedManager::tick()
+void LedManager::loop()
 {
 
     if (flash)

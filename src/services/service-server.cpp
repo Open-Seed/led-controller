@@ -81,9 +81,10 @@ void api_post_preferences()
 
 void api_get_state()
 {
-  String status = ledManager.getState();
-  server.send(200, "application/json", status);
-  delay(250);
+  StaticJsonDocument<256> state = ledManager.getState();
+  String response;
+  deserializeJson(state, response);
+  server.send(200, "application/json", response);
 }
 
 void api_set_state()
@@ -96,9 +97,17 @@ void api_set_state()
     return;
   }
 
-  ledManager.setState(_body);
+  StaticJsonDocument<256> doc;
+  DeserializationError error = deserializeJson(doc, _body);
+  if (error)
+  {
+    Serial.print(F("deserializeJson() failed: "));
+    Serial.println(error.c_str());
+    return;
+  }
+
+  ledManager.setState(doc);
   api_get_state();
-  delay(250);
 }
 
 void api_not_found()
@@ -119,7 +128,7 @@ ServerService::ServerService()
   server.begin();
 }
 
-void ServerService::tick()
+void ServerService::loop()
 {
   server.handleClient();
 }

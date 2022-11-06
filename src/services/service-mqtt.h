@@ -6,7 +6,7 @@ class MQTTService
 
 public:
     MQTTService();
-    void tick();
+    void loop();
 
 private:
     bool enabled;

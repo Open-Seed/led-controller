@@ -6,7 +6,7 @@ class ServerService
 
 public:
     ServerService();
-    void tick();
+    void loop();
 
 private:
 };

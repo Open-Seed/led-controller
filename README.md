@@ -69,18 +69,23 @@ light:
     qos: 0
 
 # RGB:
-light:
-  - platform: mqtt
-    schema: json
-    name: mqtt_json_light_2
-    state_topic: "open_led/state"
-    command_topic: "open_led/state/set"
-    brightness: true
-    rgb: true
-    effect: true
-    effect_list: [color_fade_slow, color_fade_fast, flash]
-    optimistic: false
-    qos: 0
+mqtt:
+    light:
+      - name: aquarium_led
+        unique_id: light.aquarium_led_1
+        schema: json
+        state_topic: "open_led/state"
+        command_topic: "open_led/state/set"
+        availability_topic: "open_led/availability"
+        payload_available: "online"
+        payload_not_available: "offline"
+        brightness: true
+        color_mode: true
+        supported_color_modes: ["rgb"]
+        effect: true
+        effect_list: [color_fade_slow, color_fade_fast, flash]
+        optimistic: false
+        qos: 1
 
 # RGBW:
 light:
