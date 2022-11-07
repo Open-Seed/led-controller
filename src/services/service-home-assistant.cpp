@@ -13,9 +13,8 @@ extern SystemPreference systemPreference;
 extern LedManager ledManager;
 extern WiFiClient espClient;
 
-HADevice device;
-HAMqtt mqtt(espClient, device);
-
+HADevice device(HA_UNIQUE_NAME);
+HAMqtt haMqtt(espClient, device);
 HALight light(HA_UNIQUE_NAME, HALight::BrightnessFeature | HALight::RGBFeature);
 
 void onStateCommand(bool state, HALight *sender)
@@ -62,36 +61,43 @@ void onRGBColorCommand(HALight::RGBColor color, HALight *sender)
 
 HomeAssistantService::HomeAssistantService()
 {
+
     DynamicJsonDocument config = systemPreference.getPreferences(PREFERENCE_SYSTEM_CONFIG);
 
-    const char *clientName = config["mqtt"]["name"] != nullptr ? config["mqtt"]["name"].as<const char *>() : HA_UNIQUE_NAME;
-    const char *username = config["mqtt"]["username"].as<const char *>();
-    const char *password = config["mqtt"]["password"].as<const char *>();
-    const char *serverIp = config["mqtt"]["server"].as<const char *>();
-
-    String mac = WiFi.macAddress();
-    int macSize = sizeof(mac) + 1;
-    byte macAddress[macSize];
-    mac.getBytes(macAddress, macSize);
+    const char *mqttClientName = config["mqtt"]["name"] != nullptr ? config["mqtt"]["name"].as<const char *>() : HA_UNIQUE_NAME;
+    const char *mqttUsername = config["mqtt"]["username"].as<const char *>();
+    const char *mqttPassword = config["mqtt"]["password"].as<const char *>();
+    const char *mqttServer = config["mqtt"]["server"].as<const char *>();
 
     // set device's details (optional)
-    device.setName(clientName);
+    device.setName(mqttClientName);
     device.setSoftwareVersion(FIRMWARE_VERSION);
+    device.setManufacturer("Open Seed");
     device.setModel("ESP8266");
-    device.setUniqueId(macAddress, macSize);
+    device.enableSharedAvailability();
+    device.enableLastWill();
 
     // configure light (optional)
-    light.setName(clientName);
+    light.setName("Light");
 
     // handle light states
     light.onStateCommand(onStateCommand);
     light.onBrightnessCommand(onBrightnessCommand);
     light.onRGBColorCommand(onRGBColorCommand);
 
-    mqtt.begin(serverIp, username, password);
+    IPAddress serverIp;
+    serverIp.fromString(mqttServer);
+
+    char username[sizeof(mqttUsername) + 1];
+    memset(username, '\0', sizeof(mqttUsername));
+    strcpy(username, mqttUsername);
+
+    haMqtt.begin(serverIp, username, mqttPassword);
+    // Hack to get the server connected
+    haMqtt.loop();
 }
 
 void HomeAssistantService::loop()
 {
-    mqtt.loop();
+    haMqtt.loop();
 }

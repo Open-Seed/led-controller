@@ -57,6 +57,14 @@ You will be able to set the brightness and color of 5050, 3535 and other variant
 
 The integration will allow for auto discovery. The underlying library used to achieve this is [Arduino Home Assistant Integration](https://github.com/dawidchyrzynski/arduino-home-assistant) with implementation of the Light device.
 
+Note, if you are struggling with authentication against your HA mosquito mqtt broker, add a custom `login` under `logins`
+
+```yaml
+logins:
+  - username: user
+    password: pass
+```
+
 ### Home Assistant (MQTT)
 
 To set this system up, you need to configure the [MQTT light component](https://www.home-assistant.io/integrations/light.mqtt#json-schema) in Home Assistant and set up a light to control. This guide assumes that you already have Home Assistant set up and running. If not, see the installation guides [here](https://home-assistant.io/getting-started/).

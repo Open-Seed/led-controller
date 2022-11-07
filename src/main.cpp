@@ -2,6 +2,7 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <ArduinoJson.h>
+#include <ArduinoHA.h>
 
 #include "settings.h"
 
@@ -19,7 +20,9 @@
 
 WiFiClient espClient;
 SystemWifi systemWifi;
+
 SystemPreference *systemPreference;
+
 ServerService *serverService;
 HomeAssistantService *homeAssistantService;
 MQTTService *mqttService;
@@ -43,7 +46,6 @@ void setup()
 
   if (systemWifi.init())
   {
-
     // Both use mqtt protocol, so can only enable one at a stage
     if (ENABLED_HOME_ASSISTANT)
     {

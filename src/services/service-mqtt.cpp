@@ -57,6 +57,11 @@ void messageReceived(char *topic, byte *payload, unsigned int length)
 
 void connectClient()
 {
+    if (mqttClient.connected())
+    {
+        return;
+    }
+
     DynamicJsonDocument config = systemPreference.getPreferences(PREFERENCE_SYSTEM_CONFIG);
 
     const char *mqttClientName = config["mqtt"]["name"] != nullptr ? config["mqtt"]["name"].as<const char *>() : BOARD_NAME;
@@ -67,7 +72,7 @@ void connectClient()
     mqttClient.setServer(mqttServer, 1883);
 
     Serial.print(F(" - MQTT...."));
-    if (mqttClient.connect(mqttClientName, mqttUsername, mqttPassword, CONFIG_MQTT_TOPIC_AVAILABILITY, 1, false, CONFIG_MQTT_PAYLOAD_ONLINE))
+    if (mqttClient.connect(mqttClientName, mqttUsername, mqttPassword, CONFIG_MQTT_TOPIC_AVAILABILITY, 1, false, CONFIG_MQTT_PAYLOAD_OFFLINE))
     {
         Serial.print(F("connected: "));
         Serial.println(mqttServer);
@@ -91,11 +96,6 @@ MQTTService::MQTTService()
 
 void MQTTService::loop()
 {
-
-    if (!mqttClient.connected())
-    {
-        connectClient();
-    }
-
+    connectClient();
     mqttClient.loop();
 }
