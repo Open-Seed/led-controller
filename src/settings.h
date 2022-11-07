@@ -60,6 +60,6 @@ enum StripType
 #define CONFIG_DEFAULT_TRANSITION_TIME 1
 // Default number of flashes if no value was given
 #define CONFIG_DEFAULT_FLASH_LENGTH 2
-// Number of seconds for one transition in colorfade mode
-#define CONFIG_COLOR_FADE_TIME_SLOW 10
+// Number of seconds for one transition in color fade mode
+#define CONFIG_COLOR_FADE_TIME_SLOW 6
 #define CONFIG_COLORFADE_TIME_FAST 3

@@ -83,7 +83,7 @@ void api_get_state()
 {
   StaticJsonDocument<256> state = ledManager.getState();
   String response;
-  deserializeJson(state, response);
+  serializeJson(state, response);
   server.send(200, "application/json", response);
 }
 

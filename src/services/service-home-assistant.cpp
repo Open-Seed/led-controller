@@ -23,17 +23,11 @@ void onStateCommand(bool state, HALight *sender)
     doc["state"] = state ? CONFIG_MQTT_PAYLOAD_ON : CONFIG_MQTT_PAYLOAD_OFF;
     ledManager.setState(doc);
 
-    Serial.print("State: ");
-    Serial.println(state);
-
     sender->setState(state); // report state back to the Home Assistant
 }
 
 void onBrightnessCommand(uint8_t brightness, HALight *sender)
 {
-    Serial.print("Brightness: ");
-    Serial.println(brightness);
-
     StaticJsonDocument<256> doc;
     doc["brightness"] = brightness;
     ledManager.setState(doc);
@@ -45,23 +39,15 @@ void onRGBColorCommand(HALight::RGBColor color, HALight *sender)
 {
     StaticJsonDocument<256> doc;
     doc["color"]["r"] = color.red;
-    doc["color"]["g"] = color.red;
-    doc["color"]["b"] = color.red;
+    doc["color"]["g"] = color.green;
+    doc["color"]["b"] = color.blue;
     ledManager.setState(doc);
-
-    Serial.print("Red: ");
-    Serial.println(color.red);
-    Serial.print("Green: ");
-    Serial.println(color.green);
-    Serial.print("Blue: ");
-    Serial.println(color.blue);
 
     sender->setRGBColor(color); // report color back to the Home Assistant
 }
 
 HomeAssistantService::HomeAssistantService()
 {
-
     DynamicJsonDocument config = systemPreference.getPreferences(PREFERENCE_SYSTEM_CONFIG);
 
     const char *mqttClientName = config["mqtt"]["name"] != nullptr ? config["mqtt"]["name"].as<const char *>() : HA_UNIQUE_NAME;
@@ -95,6 +81,12 @@ HomeAssistantService::HomeAssistantService()
     haMqtt.begin(serverIp, username, mqttPassword);
     // Hack to get the server connected
     haMqtt.loop();
+
+    if (haMqtt.isConnected())
+    {
+        Serial.print("Connected to home assistant : ");
+        Serial.println(mqttServer);
+    }
 }
 
 void HomeAssistantService::loop()
