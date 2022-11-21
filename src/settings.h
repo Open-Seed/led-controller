@@ -43,6 +43,7 @@ enum StripType
  */
 #define EEPROM_SIZE 512
 #define PREFERENCE_SYSTEM_CONFIG "/system_config.json"
+#define PREFERENCE_SYSTEM_STATE "/system_state.json"
 
 /**
  * Hardware

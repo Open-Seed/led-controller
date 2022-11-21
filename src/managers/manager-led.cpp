@@ -3,6 +3,9 @@
 #include <ArduinoJson.h>
 #include "settings.h"
 #include "util/util-step.h"
+#include "../system/system-preference.h"
+
+extern SystemPreference systemPreference;
 
 const bool rgb = (CONFIG_STRIP == RGB) || (CONFIG_STRIP == RGBW);
 const bool includeWhite = (CONFIG_STRIP == BRIGHTNESS) || (CONFIG_STRIP == RGBW);
@@ -71,6 +74,9 @@ LedManager::LedManager()
     {
         pinMode(CONFIG_PIN_WHITE, OUTPUT);
     }
+
+    DynamicJsonDocument systemState = systemPreference.getPreferences(PREFERENCE_SYSTEM_STATE);
+    this->setState(systemState);
 }
 
 void LedManager::setState(StaticJsonDocument<256> payload)
@@ -210,6 +216,9 @@ void LedManager::setState(StaticJsonDocument<256> payload)
 
     startFade = true;
     inFade = false; // Kill the current fade
+
+    // Persist the LED state to reinitialize on a power cycle
+    systemPreference.setPreferences(PREFERENCE_SYSTEM_STATE, payload);
 }
 
 StaticJsonDocument<256> LedManager::getState()

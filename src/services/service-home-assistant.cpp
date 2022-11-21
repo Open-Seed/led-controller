@@ -78,7 +78,11 @@ HomeAssistantService::HomeAssistantService()
     memset(username, '\0', sizeof(mqttUsername));
     strcpy(username, mqttUsername);
 
-    haMqtt.begin(serverIp, username, mqttPassword);
+    char password[sizeof(mqttPassword) + 1];
+    memset(password, '\0', sizeof(mqttPassword));
+    strcpy(password, mqttPassword);
+
+    haMqtt.begin(serverIp, username, password);
     // Hack to get the server connected
     haMqtt.loop();
 
