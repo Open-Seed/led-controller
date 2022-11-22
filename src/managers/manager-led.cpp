@@ -81,7 +81,6 @@ LedManager::LedManager()
 
 void LedManager::setState(StaticJsonDocument<256> payload)
 {
-
     if (payload["state"] != nullptr)
     {
         if (strcmp(payload["state"], CONFIG_MQTT_PAYLOAD_ON) == 0)
@@ -217,8 +216,9 @@ void LedManager::setState(StaticJsonDocument<256> payload)
     startFade = true;
     inFade = false; // Kill the current fade
 
+    StaticJsonDocument<256> fullState = this->getState();
     // Persist the LED state to reinitialize on a power cycle
-    systemPreference.setPreferences(PREFERENCE_SYSTEM_STATE, payload);
+    systemPreference.setPreferences(PREFERENCE_SYSTEM_STATE, fullState);
 }
 
 StaticJsonDocument<256> LedManager::getState()

@@ -65,22 +65,18 @@ HomeAssistantService::HomeAssistantService()
     // configure light (optional)
     light.setName("Light");
 
+    StaticJsonDocument<256> doc = ledManager.getState();
+
+    light.setCurrentState(doc["state"] == CONFIG_MQTT_PAYLOAD_ON ? true : false);
+    light.setCurrentBrightness(doc["brightness"]);
+    light.setCurrentRGBColor(HALight::RGBColor(doc["color"]["r"], doc["color"]["g"], doc["color"]["b"]));
+
     // handle light states
     light.onStateCommand(onStateCommand);
     light.onBrightnessCommand(onBrightnessCommand);
     light.onRGBColorCommand(onRGBColorCommand);
 
     haMqtt.begin(this->mqttServer.c_str(), this->mqttUsername.c_str(), this->mqttPassword.c_str());
-
-    if (haMqtt.isConnected())
-    {
-        Serial.print("Connected to home assistant : ");
-        Serial.println(mqttServer);
-    }
-    else
-    {
-        Serial.println("Failed to connected to home assistant");
-    }
 }
 
 void HomeAssistantService::loop()

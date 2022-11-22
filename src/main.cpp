@@ -78,6 +78,8 @@ void loop()
     return;
   }
 
+  ledManager->loop();
+
   if (ENABLED_HOME_ASSISTANT)
   {
     homeAssistantService->loop();
@@ -87,6 +89,5 @@ void loop()
     mqttService->loop();
   }
 
-  ledManager->loop();
   serverService->loop();
 }
