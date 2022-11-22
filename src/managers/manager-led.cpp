@@ -28,7 +28,7 @@ bool stateOn = false;
 // Globals for fade/transitions
 bool startFade = false;
 unsigned long lastLoop = 0;
-int transitionTime = 0;
+unsigned long transitionTime = 0;
 bool inFade = false;
 int loopCount = 0;
 int stepR, stepG, stepB, stepW;
@@ -37,7 +37,7 @@ int redVal, grnVal, bluVal, whtVal;
 // Globals for flash
 bool flash = false;
 bool startFlash = false;
-int flashLength = 0;
+unsigned long flashLength = 0;
 unsigned long flashStartTime = 0;
 byte flashRed = red;
 byte flashGreen = green;
@@ -99,7 +99,7 @@ void LedManager::setState(StaticJsonDocument<256> payload)
     {
         if (payload["flash"] != nullptr)
         {
-            flashLength = (int)payload["flash"] * 1000;
+            flashLength = (long)payload["flash"] * 1000;
         }
         else
         {
@@ -156,7 +156,7 @@ void LedManager::setState(StaticJsonDocument<256> payload)
         }
         else
         {
-            transitionTime = CONFIG_COLORFADE_TIME_FAST;
+            transitionTime = CONFIG_COLOR_FADE_TIME_FAST;
         }
     }
     else if (colorFade && payload["color"] == nullptr && payload["brightness"] != nullptr)

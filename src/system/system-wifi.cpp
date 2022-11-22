@@ -20,8 +20,8 @@ bool SystemWifi::init()
     Serial.println(" - WiFi Mode = AP");
 
     WiFi.mode(WIFI_AP);
-    WiFi.hostname(config["board"]["name"] != nullptr ? config["board"]["name"].as<char *>() : BOARD_NAME);
-    WiFi.softAP(config["wifi"]["name"] != nullptr ? config["wifi"]["name"].as<char *>() : WIFI_SSID_NAME);
+    WiFi.hostname(config["board"]["name"] != nullptr ? config["board"]["name"].as<const char *>() : BOARD_NAME);
+    WiFi.softAP(config["wifi"]["name"] != nullptr ? config["wifi"]["name"].as<const char *>() : WIFI_SSID_NAME);
 
     IPAddress IP = WiFi.softAPIP();
     Serial.print(" - AP IP address: ");
@@ -35,8 +35,8 @@ bool SystemWifi::init()
     Serial.println(" - WiFi Mode = STA");
 
     WiFi.mode(WIFI_STA);
-    WiFi.hostname(config["board"]["name"] != nullptr ? config["board"]["name"].as<char *>() : BOARD_NAME);
-    WiFi.begin(config["wifi"]["ssid"].as<char *>(), config["wifi"]["password"].as<char *>());
+    WiFi.hostname(config["board"]["name"] != nullptr ? config["board"]["name"].as<const char *>() : BOARD_NAME);
+    WiFi.begin(config["wifi"]["ssid"].as<const char *>(), config["wifi"]["password"].as<const char *>());
 
     if (WiFi.waitForConnectResult() != WL_CONNECTED)
     {
@@ -44,7 +44,7 @@ bool SystemWifi::init()
       return false;
     }
 
-    MDNS.begin(config["board"]["dns"] != nullptr ? config["board"]["dns"].as<char *>() : BOARD_DNS);
+    MDNS.begin(config["board"]["dns"] != nullptr ? config["board"]["dns"].as<const char *>() : BOARD_DNS);
 
     Serial.print(" - ");
     Serial.println(WiFi.localIP());

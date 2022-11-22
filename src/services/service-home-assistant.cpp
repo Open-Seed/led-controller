@@ -15,7 +15,7 @@ extern WiFiClient espClient;
 
 HADevice device(HA_UNIQUE_NAME);
 HAMqtt haMqtt(espClient, device);
-HALight light(HA_UNIQUE_NAME, HALight::BrightnessFeature | HALight::RGBFeature);
+HALight light(HA_UNIQUE_LIGHT_NAME, HALight::BrightnessFeature | HALight::RGBFeature);
 
 void onStateCommand(bool state, HALight *sender)
 {
@@ -23,7 +23,7 @@ void onStateCommand(bool state, HALight *sender)
     doc["state"] = state ? CONFIG_MQTT_PAYLOAD_ON : CONFIG_MQTT_PAYLOAD_OFF;
     ledManager.setState(doc);
 
-    sender->setState(state); // report state back to the Home Assistant
+    sender->setState(state);
 }
 
 void onBrightnessCommand(uint8_t brightness, HALight *sender)
@@ -31,8 +31,7 @@ void onBrightnessCommand(uint8_t brightness, HALight *sender)
     StaticJsonDocument<256> doc;
     doc["brightness"] = brightness;
     ledManager.setState(doc);
-
-    sender->setBrightness(brightness); // report brightness back to the Home Assistant
+    sender->setBrightness(brightness);
 }
 
 void onRGBColorCommand(HALight::RGBColor color, HALight *sender)
@@ -43,23 +42,23 @@ void onRGBColorCommand(HALight::RGBColor color, HALight *sender)
     doc["color"]["b"] = color.blue;
     ledManager.setState(doc);
 
-    sender->setRGBColor(color); // report color back to the Home Assistant
+    sender->setRGBColor(color);
 }
 
 HomeAssistantService::HomeAssistantService()
 {
     DynamicJsonDocument config = systemPreference.getPreferences(PREFERENCE_SYSTEM_CONFIG);
 
-    const char *mqttClientName = config["mqtt"]["name"] != nullptr ? config["mqtt"]["name"].as<const char *>() : HA_UNIQUE_NAME;
-    const char *mqttUsername = config["mqtt"]["username"].as<const char *>();
-    const char *mqttPassword = config["mqtt"]["password"].as<const char *>();
-    const char *mqttServer = config["mqtt"]["server"].as<const char *>();
+    this->mqttClientName = config["mqtt"]["name"] != nullptr ? config["mqtt"]["name"].as<String>() : HA_UNIQUE_NAME;
+    this->mqttUsername = config["mqtt"]["username"].as<String>();
+    this->mqttPassword = config["mqtt"]["password"].as<String>();
+    this->mqttServer = config["mqtt"]["server"].as<String>();
 
     // set device's details (optional)
-    device.setName(mqttClientName);
+    device.setName(this->mqttClientName.c_str());
     device.setSoftwareVersion(FIRMWARE_VERSION);
     device.setManufacturer("Open Seed");
-    device.setModel("ESP8266");
+    device.setModel("Led Controller");
     device.enableSharedAvailability();
     device.enableLastWill();
 
@@ -71,25 +70,16 @@ HomeAssistantService::HomeAssistantService()
     light.onBrightnessCommand(onBrightnessCommand);
     light.onRGBColorCommand(onRGBColorCommand);
 
-    IPAddress serverIp;
-    serverIp.fromString(mqttServer);
-
-    char username[sizeof(mqttUsername) + 1];
-    memset(username, '\0', sizeof(mqttUsername));
-    strcpy(username, mqttUsername);
-
-    char password[sizeof(mqttPassword) + 1];
-    memset(password, '\0', sizeof(mqttPassword));
-    strcpy(password, mqttPassword);
-
-    haMqtt.begin(serverIp, username, password);
-    // Hack to get the server connected
-    haMqtt.loop();
+    haMqtt.begin(this->mqttServer.c_str(), this->mqttUsername.c_str(), this->mqttPassword.c_str());
 
     if (haMqtt.isConnected())
     {
         Serial.print("Connected to home assistant : ");
         Serial.println(mqttServer);
+    }
+    else
+    {
+        Serial.println("Failed to connected to home assistant");
     }
 }
 

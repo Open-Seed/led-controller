@@ -6,6 +6,12 @@ class HomeAssistantService
 public:
     HomeAssistantService();
     void loop();
+
+private:
+    String mqttClientName;
+    String mqttUsername;
+    String mqttPassword;
+    String mqttServer;
 };
 
 #endif

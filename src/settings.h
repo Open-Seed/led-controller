@@ -15,7 +15,8 @@ enum StripType
 
 // Home Assistant
 #define ENABLED_HOME_ASSISTANT true
-#define HA_UNIQUE_NAME "openled-1234" // Unique name used by home assistant as the device name
+#define HA_UNIQUE_NAME "openled-1234"    // Unique name used by home assistant as the device name
+#define HA_UNIQUE_LIGHT_NAME "led_strip" // Unique name used by home assistant as the entity name
 
 // MQTT Topics
 #define ENABLED_MQTT false
@@ -63,4 +64,4 @@ enum StripType
 #define CONFIG_DEFAULT_FLASH_LENGTH 2
 // Number of seconds for one transition in color fade mode
 #define CONFIG_COLOR_FADE_TIME_SLOW 6
-#define CONFIG_COLORFADE_TIME_FAST 3
+#define CONFIG_COLOR_FADE_TIME_FAST 3
